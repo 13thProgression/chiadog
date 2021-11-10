@@ -1,7 +1,7 @@
 # std
 import logging
 from typing import List
-import smtplib
+import smtplib, ssl
 import email.utils
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -52,11 +52,8 @@ class SMTPNotifier(Notifier):
 
                 # Try to send the message.
                 try:
-                    server = smtplib.SMTP(self.host, self.port, timeout=self._conn_timeout_seconds)
-                    server.ehlo()
-                    server.starttls()
-                    # stmplib docs recommend calling ehlo() before & after starttls()
-                    server.ehlo()
+                    context = ssl.create_default_context()
+                    server = smtplib.SMTP_SSL(self.host, self.port, timeout=self._conn_timeout_seconds, context=context)
                     server.login(self.username_smtp, self.password_smtp)
                     server.sendmail(self.sender, self.recipient, msg.as_string())
                     server.quit()
